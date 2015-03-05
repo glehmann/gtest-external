@@ -13,18 +13,25 @@ else()
     gtest-external
     URL http://googletest.googlecode.com/files/gtest-1.7.0.zip
     URL_MD5 2d6ec8ccdf5c46b05ba54a9fd1d130d7
+    CMAKE_CACHE_ARGS
+      -Dgtest_force_shared_crt:BOOL=ON
     INSTALL_COMMAND "")
-  
-  ExternalProject_Get_Property(gtest-external binary_dir)
-  add_library(gtest IMPORTED STATIC)
-  set_target_properties(gtest PROPERTIES
-      IMPORTED_LOCATION ${binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest${CMAKE_STATIC_LIBRARY_SUFFIX})
-  add_dependencies(gtest gtest-external)
 
-  add_library(gtest_main IMPORTED STATIC GLOBAL)
-  set_target_properties(gtest_main PROPERTIES
-      IMPORTED_LOCATION ${binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX})
-  add_dependencies(gtest_main gtest-external)
+  ExternalProject_Get_Property(gtest-external binary_dir)
+  foreach(lib gtest gtest_main)
+    add_library(${lib} IMPORTED STATIC)
+    add_dependencies(${lib} gtest-external)
+    if(CMAKE_CONFIGURATION_TYPES)
+      foreach(type ${CMAKE_CONFIGURATION_TYPES})
+        string(TOUPPER ${type} TYPE)
+        set_target_properties(${lib} PROPERTIES
+          IMPORTED_LOCATION_${TYPE} ${binary_dir}/${type}/${CMAKE_STATIC_LIBRARY_PREFIX}${lib}${CMAKE_STATIC_LIBRARY_SUFFIX})
+      endforeach()
+    else()
+      set_target_properties(${lib} PROPERTIES
+        IMPORTED_LOCATION ${binary_dir}/${CMAKE_STATIC_LIBRARY_PREFIX}${lib}${CMAKE_STATIC_LIBRARY_SUFFIX})
+    endif()
+  endforeach()
 
   ExternalProject_Get_Property(gtest-external source_dir)
   set(GTEST_INCLUDE_DIRS ${source_dir}/include)
