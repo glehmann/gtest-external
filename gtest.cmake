@@ -3,10 +3,13 @@ option(USE_SYSTEM_GTEST "Use system installed gtest when set to ON, or build gte
 if(USE_SYSTEM_GTEST)
   find_package(GTest)
 else()
+  if(${CMAKE_VERSION} VERSION_LESS 3.2 AND CMAKE_GENERATOR MATCHES "Ninja")
+    message(WARNING "Building GTest with Ninja has known issues with CMake older than 3.2")
+  endif()
+
   include(ExternalProject)
 
   set(GTEST_LIBRARIES gtest gtest_main)
-
   # the binary dir must be know before creating the external project in order
   # to pass the byproducts
   set(prefix "${CMAKE_CURRENT_BINARY_DIR}/gtest-external")
@@ -18,13 +21,6 @@ else()
     set(${lib}_properties IMPORTED_LOCATION ${file})
     list(APPEND byproducts ${file})
   endforeach()
-
-  set(build_byproducts)
-  if(${CMAKE_VERSION} VERSION_LESS 3.2 AND CMAKE_GENERATOR MATCHES "Ninja")
-    message(WARNING "Building GTest with Ninja has known issues with CMake older than 3.2")
-  else()
-    set(build_byproducts BUILD_BYPRODUCTS ${byproducts})
-  endif()
 
   ExternalProject_Add(
     gtest-external
@@ -47,7 +43,7 @@ else()
       -DCMAKE_C_FLAGS_RELWITHDEBINFO:STRING=${CMAKE_C_FLAGS_RELWITHDEBINFO}
       -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
       -Dgtest_force_shared_crt:BOOL=ON
-    ${build_byproducts}
+    BUILD_BYPRODUCTS ${byproducts}
     INSTALL_COMMAND "")
 
   foreach(lib ${GTEST_LIBRARIES})
