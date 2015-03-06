@@ -17,9 +17,9 @@ else()
 
   set(byproducts)
   foreach(lib ${GTEST_LIBRARIES})
-    set(file ${binary_dir}/${CMAKE_CFG_INTDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${lib}${CMAKE_STATIC_LIBRARY_SUFFIX})
-    set(${lib}_properties IMPORTED_LOCATION ${file})
-    list(APPEND byproducts ${file})
+    set(${lib}_location
+      ${binary_dir}/${CMAKE_CFG_INTDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${lib}${CMAKE_STATIC_LIBRARY_SUFFIX})
+    list(APPEND byproducts ${${lib}_location})
   endforeach()
 
   ExternalProject_Add(
@@ -49,7 +49,7 @@ else()
   foreach(lib ${GTEST_LIBRARIES})
     add_library(${lib} IMPORTED STATIC)
     add_dependencies(${lib} gtest-external)
-    set_target_properties(${lib} PROPERTIES ${${lib}_properties})
+    set_target_properties(${lib} PROPERTIES IMPORTED_LOCATION ${${lib}_location})
   endforeach()
 
   ExternalProject_Get_Property(gtest-external source_dir)
