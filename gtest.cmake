@@ -10,15 +10,11 @@ else()
   include(ExternalProject)
 
   set(GTEST_LIBRARIES gtest gtest_main)
-  # the binary dir must be know before creating the external project in order
-  # to pass the byproducts
-  set(prefix "${CMAKE_CURRENT_BINARY_DIR}/gtest-external")
-  set(binary_dir "${prefix}/src/gtest-external-build")
 
   set(byproducts)
   foreach(lib ${GTEST_LIBRARIES})
     set(${lib}_location
-      ${binary_dir}/${CMAKE_CFG_INTDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${lib}${CMAKE_STATIC_LIBRARY_SUFFIX})
+      <BINARY_DIR>/${CMAKE_CFG_INTDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${lib}${CMAKE_STATIC_LIBRARY_SUFFIX})
     list(APPEND byproducts ${${lib}_location})
   endforeach()
 
@@ -26,8 +22,6 @@ else()
     gtest-external
     URL http://googletest.googlecode.com/files/gtest-1.7.0.zip
     URL_MD5 2d6ec8ccdf5c46b05ba54a9fd1d130d7
-    PREFIX ${prefix}
-    BINARY_DIR ${binary_dir}
     CMAKE_CACHE_ARGS
       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
       -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
@@ -46,9 +40,11 @@ else()
     BUILD_BYPRODUCTS ${byproducts}
     INSTALL_COMMAND "")
 
+  ExternalProject_Get_Property(gtest-external binary_dir)
   foreach(lib ${GTEST_LIBRARIES})
     add_library(${lib} IMPORTED STATIC)
     add_dependencies(${lib} gtest-external)
+    _ep_replace_location_tags(gtest-external ${lib}_location)
     set_target_properties(${lib} PROPERTIES IMPORTED_LOCATION ${${lib}_location})
   endforeach()
 
