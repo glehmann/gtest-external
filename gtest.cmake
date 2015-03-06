@@ -5,13 +5,15 @@ if(USE_SYSTEM_GTEST)
 else()
   include(ExternalProject)
 
+  set(GTEST_LIBRARIES gtest gtest_main)
+
   # the binary dir must be know before creating the external project in order
   # to pass the byproducts
   set(prefix "${CMAKE_CURRENT_BINARY_DIR}/gtest-external")
   set(binary_dir "${prefix}/src/gtest-external-build")
 
   set(byproducts)
-  foreach(lib gtest gtest_main)
+  foreach(lib ${GTEST_LIBRARIES})
     set(file ${binary_dir}/${CMAKE_CFG_INTDIR}/${CMAKE_STATIC_LIBRARY_PREFIX}${lib}${CMAKE_STATIC_LIBRARY_SUFFIX})
     set(${lib}_properties IMPORTED_LOCATION ${file})
     list(APPEND byproducts ${file})
@@ -50,7 +52,7 @@ else()
     ${build_byproducts}
     INSTALL_COMMAND "")
 
-  foreach(lib gtest gtest_main)
+  foreach(lib ${GTEST_LIBRARIES})
     add_library(${lib} IMPORTED STATIC)
     add_dependencies(${lib} gtest-external)
     set_target_properties(${lib} PROPERTIES ${${lib}_properties})
@@ -58,6 +60,5 @@ else()
 
   ExternalProject_Get_Property(gtest-external source_dir)
   set(GTEST_INCLUDE_DIRS ${source_dir}/include)
-  set(GTEST_LIBRARIES gtest gtest_main)
   set(GTEST_FOUND ON)
 endif()
