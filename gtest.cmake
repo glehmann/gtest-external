@@ -3,7 +3,7 @@ option(USE_SYSTEM_GTEST "Use system installed gtest when set to ON, or build gte
 if(USE_SYSTEM_GTEST)
   find_package(GTest)
 else()
-  if(${CMAKE_VERSION} VERSION_LESS 3.2 AND CMAKE_GENERATOR MATCHES "Ninja")
+  if(CMAKE_VERSION VERSION_LESS 3.2 AND CMAKE_GENERATOR MATCHES "Ninja")
     message(WARNING "Building GTest with Ninja has known issues with CMake older than 3.2")
   endif()
 
